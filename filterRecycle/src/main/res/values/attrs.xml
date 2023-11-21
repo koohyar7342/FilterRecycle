@@ -1,0 +1,13 @@
+
+<resources>
+    <declare-styleable name="FilterRecycle">
+        <attr name="fr_unselected_Background_color" format="reference"/>
+        <attr name="fr_unselected_text_color" format="reference"/>
+        <attr name="fr_selected_background_color" format="reference"/>
+        <attr name="fr_selected_text_color" format="reference"/>
+        <attr name="fr_card_content_padding" format="reference"/>
+
+    </declare-styleable>
+
+
+</resources>

@@ -4,20 +4,9 @@ plugins {
     id("kotlin-kapt")
     id("maven-publish")
 }
-publishing {
-    publications {
-        register<MavenPublication>("release") {
-            groupId = "com.koohyar.filterRecycle"
-            artifactId = "FilterRecycle"
-            version = "1.0"
 
-            afterEvaluate {
-                from(components["release"])
-            }
-        }
-    }
 
-}
+
 android {
     namespace = "com.koohyar.filterRecycle"
     compileSdk = 34
@@ -58,6 +47,20 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+}
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = "com.koohyar"
+            artifactId = "FilterRecycle"
+            version = "1.0"
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
+    }
+
 }
 
 dependencies {

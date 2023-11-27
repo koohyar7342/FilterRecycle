@@ -86,6 +86,6 @@ removing filter with it's id manually
   binding.testingRecycle.removeSelectedFilter(1) // just set filter with id=1 as Unselected
 ```
 ## Find this library useful? :heart:
-Support it by joining __[stargazers](https://koohyar7342.github.io)__ for this repository. :star: <br>
-Also, __[follow me](https://github.com/koohyar7342)__ on GitHub for my next creations! 🤩
+Support me here __[https://koohyar7342.github.io](https://koohyar7342.github.io)__ <br>
+Also, __[follow me](https://github.com/koohyar7342)__ on GitHub for my next creations!
 

@@ -53,7 +53,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "com.koohyar"
             artifactId = "FilterRecycle"
-            version = "1.0"
+            version = "1.0.2"
 
             afterEvaluate {
                 from(components["release"])

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.koohyar.filterRecycle.databinding.ItemFilterBinding
+import com.koohyar.filterRecycle.databinding.ItemFilterSelectedBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,7 +30,7 @@ class FiltersAdapter(
 
 
 ) :
-    ListAdapter<FilterModel, FiltersAdapter.FilterViewHolder>(diffUtilCallback) {
+    ListAdapter<FilterModel, RecyclerView.ViewHolder>(diffUtilCallback) {
     private var recycleView: FilterRecycle? = null
     //var onClickListener: ((position:Int,id: Int) -> Unit)? = null
 
@@ -57,11 +58,12 @@ class FiltersAdapter(
     }
 
     private lateinit var binding: ItemFilterBinding
+    private lateinit var bindingSelected: ItemFilterSelectedBinding
 
     companion object {
         val diffUtilCallback = object : DiffUtil.ItemCallback<FilterModel>() {
             override fun areItemsTheSame(oldItem: FilterModel, newItem: FilterModel): Boolean {
-                return oldItem.unselectedTittle == newItem.unselectedTittle
+                return (oldItem.id == newItem.id)//&&(oldItem.selected == newItem.selected)
             }
 
             override fun areContentsTheSame(oldItem: FilterModel, newItem: FilterModel): Boolean {
@@ -72,31 +74,77 @@ class FiltersAdapter(
         }
         // var currentFilters = mutableListOf<String>()
 
+        const val SELECTED = 1
+        const val UNSELECTED = 2
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilterViewHolder {
 
-        binding = ItemFilterBinding.inflate(LayoutInflater.from(mContext), parent, false)
-        return FilterViewHolder(binding)
+    override fun getItemViewType(position: Int): Int {
+        return if (currentList[position].selected) SELECTED
+        else UNSELECTED
+    }
+
+    override fun submitList(list: MutableList<FilterModel>?) {
+        super.submitList(list?.sortedBy { it.id }?.sortedByDescending { it.selected }
+            ?.toMutableList())
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            UNSELECTED -> {
+                binding = ItemFilterBinding.inflate(LayoutInflater.from(mContext), parent, false)
+                FilterViewHolder(binding)
+            }
+
+            SELECTED -> {
+                bindingSelected =
+                    ItemFilterSelectedBinding.inflate(LayoutInflater.from(mContext), parent, false)
+                FilterSelectedViewHolder(bindingSelected)
+            }
+
+            else -> {
+                binding = ItemFilterBinding.inflate(LayoutInflater.from(mContext), parent, false)
+                FilterViewHolder(binding)
+            }
+        }
+
+
     }
 
     override fun getItemCount(): Int = currentList.size
 
-    override fun onBindViewHolder(holder: FilterViewHolder, position: Int) {
-
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val adapterPosition = holder.bindingAdapterPosition
         val item = getItem(holder.bindingAdapterPosition)
-        holder.bind(
-            item,
-            adapterPosition,
-            mContext,
-            itemClickListener,
-            currentList,
-            recycleView,
-            coroutineScope,
-            colors
+        when (holder) {
+            is FilterViewHolder -> {
+                holder.bind(
+                    item,
+                    adapterPosition,
+                    mContext,
+                    itemClickListener,
+                    currentList,
+                    recycleView,
+                    coroutineScope,
+                    colors
 
-        )
+                )
+            }
+
+            is FilterSelectedViewHolder -> {
+                holder.bind(
+                    item,
+                    adapterPosition,
+                    mContext,
+                    itemClickListener,
+                    currentList,
+                    recycleView,
+                    coroutineScope,
+                    colors
+
+                )
+            }
+        }
 
 
     }
@@ -171,94 +219,102 @@ class FiltersAdapter(
              unSelectedText
              unSelectedStroke
             */
-            val padding:Int = mContext.resources.getDimension(colors["cardContentPadding"]!!).toInt()
-            binding.itemFilterRootCard.setContentPadding(padding,padding,padding,padding)
+                        val padding: Int =
+                            mContext.resources.getDimension(colors["cardContentPadding"]!!).toInt()
+                        binding.itemFilterRootCard.setContentPadding(padding, padding, padding, padding)
+                        binding.itemFilterRemove.visibility = View.GONE
+                        binding.itemFilterTittle.setTextColor(mContext.getColor(colors["unSelectedText"]!!))
+                        binding.itemFilterRootCard.setCardBackgroundColor(mContext.getColor(colors["unSelectedBackground"]!!))
 
 
-            if (item.selected) {
-                binding.itemFilterRemove.visibility = View.VISIBLE
-                binding.itemFilterTittle.setTextColor(mContext.getColor(colors["selectedText"]!!))
-                binding.itemFilterRootCard.setCardBackgroundColor(mContext.getColor(colors["selectedBackground"]!!))
-
-
-            } else {
-                binding.itemFilterRemove.visibility = View.GONE
-                binding.itemFilterTittle.setTextColor(mContext.getColor(colors["unSelectedText"]!!))
-                binding.itemFilterRootCard.setCardBackgroundColor(mContext.getColor(colors["unSelectedBackground"]!!))
-            }
             binding.itemFilterTittle.text = item.unselectedTittle
-
             binding.root.setOnClickListener {
 
-                // showDialog(mContext,theScope,itemClickListener,position,item.id,currentList,recycleView)
 
                 theScope.launch {
-                    val bbb = itemClickListener!!.onAddFilter(position, item.id)
-                    if (bbb != null) {
-                        withContext(Dispatchers.Main) {
-                            if (bbb) {
-                                currentList[position].selected = true
-                                recycleView!!.notifyItemChanged(position)
-                                recycleView.initializeRecycleView(currentList.sortedBy { it.id }
-                                    .sortedByDescending { it.selected }, theScope)
-                                Handler(Looper.getMainLooper()).postDelayed({
-                                    recycleView.smoothScrollToPosition(0)
-                                    //notifyDataSetChanged()
-                                }, 350)
-                            }
+                    val bbb: Boolean = itemClickListener!!.onAddFilter(position, item.id)
+                    withContext(Dispatchers.Main) {
+                        if (bbb) {
+                            currentList[position].selected = true
+                            recycleView!!.notifyItemChanged(position)
+                            recycleView.setList(currentList)
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                recycleView.smoothScrollToPosition(0)
+
+                                //notifyDataSetChanged()
+                            }, 350)
+
+                            /*       recycleView!!.initializeRecycleView(currentList.sortedBy { it.id }
+                                       .sortedByDescending { it.selected }, theScope)*/
+
 
                         }
+
                     }
 
                 }
 
 
             }
-            binding.itemFilterRemove.setOnClickListener {
-                theScope.launch {
-                    val bbb = itemClickListener!!.onRemoveFilter(position, item.id)
-                    if (bbb != null) {
-                        withContext(Dispatchers.Main) {
-                            if (bbb) {
-                                currentList[position].selected = false
-                                recycleView!!.notifyItemChanged(position)
-                                recycleView.initializeRecycleView(currentList.sortedBy { it.id }
-                                    .sortedByDescending { it.selected }, theScope)
-                                Handler(Looper.getMainLooper()).postDelayed({
-                                    recycleView.smoothScrollToPosition(0)
-                                    //notifyDataSetChanged()
-                                }, 350)
-                            }
-
-                        }
-                    }
-
-                }
-            }
-
-
             // mContext.getLifeCycleOwner()?.lifecycleScope?.launch {  }
         }
 
-        private fun showDialog(
-            context: Context, theScope: CoroutineScope,
-            itemClickListener: FilterClickListener?,
+
+    }
+
+    class FilterSelectedViewHolder(private val binding: ItemFilterSelectedBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+
+
+        fun bind(
+            item: FilterModel,
             position: Int,
-            id: Int,
+            mContext: Context,
+            itemClickListener: FilterClickListener? = null,
             currentList: MutableList<FilterModel>,
-            recycleView: FilterRecycle?
-        ) {
+            recycleView: FilterRecycle?,
+            theScope: CoroutineScope,
+            colors: HashMap<String, Int>,
 
-            val dd = AlertDialog.Builder(context)
-                .setPositiveButton(android.R.string.ok) { _, _ ->
+
+            ) {
+            /*
+             selectedBackground
+             selectedText
+             selectedStroke
+             unSelectedBackground
+             unSelectedText
+             unSelectedStroke
+            */
+                        val padding: Int =
+                            mContext.resources.getDimension(colors["cardContentPadding"]!!).toInt()
+                        binding.itemFilterRootCard.setContentPadding(padding, padding, padding, padding)
+                        binding.itemFilterRemove.visibility = View.VISIBLE
+                        binding.itemFilterTittle.setTextColor(mContext.getColor(colors["selectedText"]!!))
+                        binding.itemFilterRootCard.setCardBackgroundColor(mContext.getColor(colors["selectedBackground"]!!))
+
+            binding.itemFilterTittle.text = item.selectedTittle
+            binding.itemFilterRemove.setOnClickListener {
+                theScope.launch {
+                    val bbb = itemClickListener!!.onRemoveFilter(position, item.id)
+
+                    withContext(Dispatchers.Main) {
+                        if (bbb) {
+                            currentList[position].selected = false
+                            recycleView!!.notifyItemChanged(position)
+                            recycleView.setList(currentList)
+                            /*       recycleView!!.initializeRecycleView(currentList.sortedBy { it.id }
+                                       .sortedByDescending { it.selected }, theScope)*/
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                recycleView.smoothScrollToPosition(0)
+                            }, 350)
+                        }
+
+                    }
+
 
                 }
-                .setNegativeButton(android.R.string.cancel) { _, _ ->
-
-                }
-                .setCancelable(true)
-            dd.show()
-
+            }
 
         }
 

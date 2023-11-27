@@ -5,6 +5,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.testinglibrary.databinding.ActivityMainBinding
 import com.koohyar.filterRecycle.FilterClickListener
 import com.koohyar.filterRecycle.FilterModel
@@ -14,149 +17,114 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     // lateinit var myAdapter:FiltersAdapter
-    var filtersList = listOf<FilterModel>(
+    private var filtersList = listOf<FilterModel>(
 
-        FilterModel(0, "فیلتر 0"),
-        FilterModel(1, "فیلتر 1"),
-        FilterModel(2, "فیلتر 2"),
-        FilterModel(3, "فیلتر 3"),
-        FilterModel(4, "فیلتر 4"),
-        FilterModel(5, "فیلتر 5"),
-        FilterModel(6, "فیلتر 6"),
-        FilterModel(7, "فیلتر 7"),
-        FilterModel(8, "فیلتر 8"),
-        FilterModel(9, "فیلتر 9"),
-        FilterModel(10, "فیلتر 10"),
-        /*        FilterModel("فیلتر 11"),
-                FilterModel("فیلتر 12"),
-                FilterModel("فیلتر 13"),
-                FilterModel("فیلتر 14"),
-                FilterModel("فیلتر 15"),
-                FilterModel("فیلتر 16"),
-                FilterModel("فیلتر 17"),
-                FilterModel("فیلتر 18"),
-                FilterModel("فیلتر 19"),*/
+        FilterModel(0, "فیلتر 0", "فیلتر 0", false),
+        FilterModel(1, "فیلتر 1", "فیلتر 1", false),
+        FilterModel(2, "فیلتر 2", "فیلتر 2", false),
+        FilterModel(3, "فیلتر 3", "فیلتر 3", false),
+        FilterModel(4, "فیلتر 4", "فیلتر 4", false),
+        FilterModel(5, "فیلتر 5", "فیلتر 5", false),
+        FilterModel(6, "فیلتر 6", "فیلتر 6", false),
+        FilterModel(7, "فیلتر 7", "فیلتر 7", false),
+        FilterModel(8, "فیلتر 8", "فیلتر 8", false),
+        FilterModel(9, "فیلتر 9", "فیلتر 9", false),
+        FilterModel(10, "فیلتر 10", "فیلتر 10", false)
     )
+    val mainList = listOf<String>(
+        "فیلتر 0",
+        "فیلتر 2",
+        "فیلتر 3",
+        "فیلتر 6",
+        "فیلتر 7",
+        "فیلتر 9",
+        "فیلتر 4",
+        "فیلتر 1",
+        "فیلتر 5",
+        "فیلتر 7",
+        "فیلتر 9",
+        "فیلتر 10",
+        "فیلتر 2",
+        "فیلتر 5",
+        "فیلتر 7",
+        "فیلتر 9",
+        "فیلتر 0",
+        "فیلتر 2",
+        "فیلتر 5",
+        "فیلتر 1",
+        "فیلتر 3",
+        "فیلتر 8",
+        "فیلتر 4",
+        "فیلتر 9",
+        "فیلتر 8",
+        "فیلتر 4",
+        "فیلتر 2",
+        "فیلتر 1",
+        "فیلتر 1",
+        "فیلتر 4",
+        "فیلتر 6",
+        "فیلتر 2",
+        "فیلتر 9",
+        "فیلتر 1",
+        "فیلتر 3",
+        "فیلتر 9",
+        "فیلتر 6",
+        "فیلتر 6",
+        "فیلتر 5",
+        "فیلتر 1",
+    )
+    val myAdapter = MyAdapter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initFiltersRecyclerView()
+        initMainRecycle()
 
+
+    }
+
+    private fun initMainRecycle() {
+        binding.myRecycle.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
+        binding.myRecycle.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
+        binding.myRecycle.adapter = myAdapter
+        myAdapter.submitList(mainList)
 
     }
 
     private fun initFiltersRecyclerView() {
 
-        // binding.testingRecycle.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, true)
-
-        /*      myAdapter = FiltersAdapter(
-                  this,
-                  filtersClickListener
-              )*/
         binding.testingRecycle.initializeRecycleView(filtersList, lifecycleScope)
 
         binding.testingRecycle.setClickListener(object : FilterClickListener {
-            override fun onAddFilter(position: Int, id: Int): Boolean? {
-                Toast.makeText(this@MainActivity, "onAdd", Toast.LENGTH_SHORT).show()
-                Log.d("testingRecycle", "id: $id")
+            override fun onAddFilter(position: Int, id: Int): Boolean {
 
-                binding.testingRecycle.setSelectedFilter(id)
-                return null
+                filtersList[id].apply { selected=true }
+
+                invokeFilters()
+
+                return true
             }
 
-            override fun onRemoveFilter(position: Int, id: Int): Boolean? {
+            override fun onRemoveFilter(position: Int, id: Int): Boolean {
+                filtersList[id].apply { selected=false }
+                invokeFilters()
 
-                Toast.makeText(this@MainActivity, "onRemove", Toast.LENGTH_SHORT).show()
-                Log.d("testingRecycle", "id: $id")
-
-                binding.testingRecycle.removeSelectedFilter(id)
-                return null
+                return true
             }
         })
 
 
+    }
 
+    private fun invokeFilters() {
+        val filters = mutableListOf<String>()
+        filtersList.filter { it.selected }.forEach { filters.add(it.unselectedTittle)}
+        if (filters.isNotEmpty()){
+            myAdapter.submitList(mainList.filter { filters.contains(it)})
+        } else myAdapter.submitList(mainList)
     }
 
 
-
-    /*    val filtersClickListener = object : FilterClickListener {
-            override fun onAdd(position: Int, id: Int) {
-                val dd = AlertDialog.Builder(this@MainActivity)
-                    .setPositiveButton(android.R.string.ok) { _, _ ->
-                        filtersList[position].selected = true
-                        currentFilters.add(filtersList[position].unselectedTittle)
-
-                        // myAdapter.notifyItemChanged(position)
-                        filtersList = filtersList.sortedBy { it.id }.sortedByDescending { it.selected }
-                        // myAdapter.submitList(filtersList)
-                        //val result = setFiltersOnJobsList()
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            binding.testingRecycle.smoothScrollToPosition(0)
-                        }, 350)
-
-                    }
-                    .setNegativeButton(android.R.string.cancel) { _, _ ->
-                        filtersList[position].selected = false
-                        //  myAdapter.notifyItemChanged(position)
-                        // filtersList = filtersList.sortedBy { it.id }
-                        filtersList = filtersList.sortedBy { it.id }.sortedByDescending { it.selected }
-                        //  myAdapter.submitList(filtersList)
-                        binding.testingRecycle.smoothScrollToPosition(0)
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            binding.testingRecycle.smoothScrollToPosition(0)
-                        }, 500)
-                    }
-                    .setCancelable(true)
-
-                dd.show()
-
-
-            }
-
-            override fun onRemove(position: Int, id: Int) {
-                *//*            filtersList[position].selected = false
-                        filtersAdapter.notifyItemChanged(position)
-
-                        currentFilters[id] = ""
-                        Log.d("UpdateJobs", "selectedId: ${currentFilters}")
-                        *//**//*            when (id) {
-                            0 -> {
-                                currentFilters[] = ""
-                            }
-                            1 -> {
-                                currentFilters[] = ""
-                            }
-                            2 -> {
-                                currentFilters[] = ""
-                            }
-                            3 -> {
-                                currentFilters[] = ""
-                            }
-                        }*//**//*
-
-
-            // filtersList = filtersList.sortedBy { it.id }
-            filtersList = filtersList.sortedBy { it.id }.sortedByDescending { it.selected }
-            filtersAdapter.submitList(filtersList)
-
-
-            val result = setFiltersOnJobsList()
-
-
-
-
-            binding.filterRecycle.smoothScrollToPosition(0)
-            Handler(Looper.getMainLooper()).postDelayed({
-                Log.d("UpdateJobs", "size: ${result.size}")
-                adapter.submitList(result)
-                //adapter.notifyDataSetChanged()
-
-                binding.filterRecycle.smoothScrollToPosition(0)
-            }, 500)*//*
-        }
-
-    }*/
 }

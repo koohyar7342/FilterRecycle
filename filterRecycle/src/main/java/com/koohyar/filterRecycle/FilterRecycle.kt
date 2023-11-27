@@ -32,8 +32,8 @@ class FilterRecycle(context: Context, attrs: AttributeSet) : RecyclerView(contex
         context.theme.obtainStyledAttributes(attrs, R.styleable.FilterRecycle, 0, 0).apply {
             val selectedBackground = getResourceId(R.styleable.FilterRecycle_fr_selected_background_color, android.R.color.holo_orange_light)
             val selectedText = getResourceId(R.styleable.FilterRecycle_fr_selected_text_color, android.R.color.holo_red_light)
-            val unSelectedBackground = getResourceId(R.styleable.FilterRecycle_fr_unselected_Background_color, R.color.white)
-            val unSelectedText = getResourceId(R.styleable.FilterRecycle_fr_unselected_text_color, R.color.black)
+            val unSelectedBackground = getResourceId(R.styleable.FilterRecycle_fr_unselected_Background_color, android.R.color.white)
+            val unSelectedText = getResourceId(R.styleable.FilterRecycle_fr_unselected_text_color, android.R.color.black)
             val cardContentPadding = getResourceId(R.styleable.FilterRecycle_fr_card_content_padding, R.dimen.default_content_padding)
 
             colors["selectedBackground"] = selectedBackground
@@ -74,11 +74,18 @@ class FilterRecycle(context: Context, attrs: AttributeSet) : RecyclerView(contex
             )
             setAdapter(adapter)
         }
-        adapter?.submitList(list)
+        adapter?.submitList(list.toMutableList())
     }
 
+    fun setList(list: List<FilterModel>){
+        adapter?.submitList(list.toMutableList())
+    }
     fun notifyItemChanged(adapterPosition: Int) {
         adapter!!.notifyItemChanged(adapterPosition)
+
+    }
+    fun notifyItemRangeChanged(adapterPosition: Int) {
+        adapter!!.notifyItemRangeChanged(0,adapterPosition)
 
     }
     fun setClickListener(onClickListener: FilterClickListener){

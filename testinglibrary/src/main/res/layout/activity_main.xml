@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
 
     <com.koohyar.filterRecycle.FilterRecycle
-
         android:id="@+id/testing_recycle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
-
-
+        app:fr_card_content_padding="@dimen/default_content_padding"
+        app:fr_selected_background_color="@android:color/holo_orange_light"
+        app:fr_selected_text_color="@android:color/holo_red_light"
+        app:fr_unselected_Background_color="@android:color/white"
+        app:fr_unselected_text_color="@android:color/black"
 
         />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/my_recycle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        />
 </LinearLayout>

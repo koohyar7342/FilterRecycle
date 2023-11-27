@@ -68,12 +68,12 @@ set clickListener on filters
   binding.testingRecycle.setClickListener(object : FilterClickListener {
     override fun onAddFilter(position: Int, id: Int): Boolean {
       // Apply adding filter
-      return true // or return false if you want not be added to the selected list
+      return true // or return false if you want cancel adding
     }
 
      override fun onRemoveFilter(position: Int, id: Int): Boolean {
-       // Apply romoving filter
-       return true //or return false if you want not be added to the Unselected list
+       // Apply removing filter
+       return true //or return false if you want cancel removing
     }
 })
 ```

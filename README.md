@@ -27,7 +27,7 @@ Step 2.Add the dependency below to your **module**'s `build.gradle` file:
 
 ```kotlin
 dependencies {
-  implementation 'com.github.koohyar7342:FilterRecycle:1.0.1'
+  implementation 'com.github.koohyar7342:FilterRecycle:1.0.2'
 }
 ```
 ## How to Use
